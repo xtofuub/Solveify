@@ -8,6 +8,9 @@
 - **Multiple Choice Support**: Works seamlessly with multiple-choice questions.
 - **Definition Lookup**: Provides clear definitions for single-word queries.
 - **User-Friendly Interface**: Simple and intuitive design for easy navigation.
+- **Keyboard Shortcut**: Use "Ctrl + Q" to automatically answer the highlighted task.
+
+
 
 ## Installation
 
@@ -15,10 +18,7 @@
    ```bash
    [git clone https://github.com/yourusername/questify.git](https://github.com/xtofuub/Solveify.git)
    ```
-2. Navigate to the project directory:
-   ```bash
-   cd questify
-   ```
+2. Extract the ZIP
 3. Load the extension in your browser:
    - For Chrome: Go to `chrome://extensions/`, enable "Developer mode", and click "Load unpacked". Select the project directory.
    - For Firefox: Go to `about:debugging#/runtime/this-firefox`, click "Load Temporary Add-on", and select the `manifest.json` file.
@@ -28,6 +28,7 @@
 1. Highlight a question or word on any webpage.
 2. Right-click and select "Get answer to this question".
 3. Questify will analyze the text and display the answer.
+4. It also has a built in shortcut using "ctrl + q" to automatically answer the task
 
 ## Contributing
 
