@@ -30,6 +30,18 @@
 3. Questify will analyze the text and display the answer.
 4. It also has a built in shortcut using "ctrl + q" to automatically answer the task
 
+## How to Create a Groq API Key
+
+Follow these steps to generate your Groq API key:
+
+1. **Visit the Groq API Keys Page**: Go to [Groq API Keys](https://console.groq.com/keys).
+2. **Log In**: Enter your credentials to access your Groq account. Sign up if you don’t have an account.
+3. **Access the API Keys Section**: Navigate to the **API Keys** section in the menu.
+4. **Create a New API Key**: Click on the **Create API Key** button and provide a descriptive name for your key.
+5. **Generate the Key**: Click the button to generate the API key.
+6. **Copy Your API Key**: Make sure to copy and store your API key securely.
+7. **Manage Your API Keys**: View and manage your existing API keys in the API Keys section.
+
 ## Contributing
 
 Contributions are welcome! Please fork the repository and submit a pull request for any improvements or features.
