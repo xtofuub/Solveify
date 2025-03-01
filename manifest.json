@@ -1,0 +1,30 @@
+{
+  "manifest_version": 2,
+  "name": "Answer Helper",
+  "version": "1.0",
+  "description": "Helps with answering questions",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "contextMenus",
+    "<all_urls>"
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["contentScript.js"]
+  }],
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_title": "Answer Helper"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "answer-helper@example.com",
+      "strict_min_version": "57.0"
+    }
+  }
+}
