@@ -2,6 +2,8 @@
 
 **Questify** is a browser extension that simplifies the process of answering questions. By leveraging the Groq API, it allows users to quickly analyze highlighted questions and retrieve accurate answers, making knowledge acquisition effortless.
 
+![original-7c3852b08e60261f29f0fc3a3776da6f_jpg](https://github.com/user-attachments/assets/4f0795c5-81a9-4b49-9a65-ccca129fe8e9)
+
 ## Features
 
 - **Quick Answer Retrieval**: Highlight a question and get instant answers.
