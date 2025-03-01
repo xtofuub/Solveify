@@ -2,8 +2,12 @@
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: "answerQuestion",
-    title: "Get answer to this question",
-    contexts: ["selection"]
+    title: "Get answer with Solveify",
+    contexts: ["selection"],
+    icons: {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
   });
 });
 
