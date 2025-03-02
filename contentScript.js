@@ -76,7 +76,7 @@ const groqClient = async (question) => {
                 messages: [
                     {
                         role: 'system',
-                        content: 'You are a helpful AI Assistant. Given a question and its options, analyze and return ONLY the letter of the correct answer (A, B, C, or D) for multiple choice, or "True"/"False" for true/false questions. For definition questions, provide a brief, clear definition.'
+                        content: 'You are a helpful AI Assistant. Given a question and its options, analyze and return ONLY the letter of the correct answer (A, B, C, or D) for multiple choice, or "True"/"False" for true/false questions. For definition questions, provide a detailed, clear definition.'
                     },
                     {
                         role: 'user',
@@ -97,7 +97,7 @@ const groqClient = async (question) => {
         
         if (!responseData || !responseData.choices || !responseData.choices[0] || !responseData.choices[0].message) {
             throw new Error('Invalid response from API');
-        }
+        }3000
 
         return responseData;
     } catch (error) {
@@ -117,15 +117,49 @@ async function getAnswerFromGroq(question) {
     }
 }
 
-// Function to check if text is a single word
-function isSingleWord(text) {
-    return text.trim().split(/\s+/).length === 1;
+// Function to check if text is a word or compound word
+function isWord(text) {
+    const words = text.trim().split(/\s+/);
+    // Check if it's a single word or a 2-3 word compound
+    return words.length >= 1 && words.length <= 3;
+}
+
+// Function to check if text contains Finnish characters or common Finnish words
+function isFinnish(text) {
+    // Finnish special characters
+    const finnishChars = /[äöåÄÖÅ]/;
+    
+    // Common Finnish word endings and patterns
+    const finnishPatterns = /(nen|ssa|ssä|sta|stä|lla|llä|ksi|sti|ton|tön|us|ys|in|aan|ään|ua|yä|tta|ttä|mme|tte|nsa|nsä)$/i;
+    
+    // Common Finnish short words
+    const commonFinnishWords = new Set([
+        'ja', 'on', 'se', 'ei', 'että', 'oli', 'ovat', 'ole', 'tai', 'kun',
+        'jos', 'niin', 'hän', 'me', 'te', 'he', 'tämä', 'tuo', 'nyt', 'voi',
+        'olla', 'joka', 'sen', 'vain', 'kuin', 'minä', 'mitä', 'niin'
+    ]);
+
+    const words = text.toLowerCase().trim().split(/\s+/);
+    
+    return words.some(word => 
+        finnishChars.test(word) || 
+        finnishPatterns.test(word) || 
+        commonFinnishWords.has(word)
+    );
 }
 
 // Function to get definition from Groq API
 async function getDefinition(word) {
     try {
-        const result = await groqClient(`Define this Finnish word in Finnish: "${word}". Give a brief, clear definition only.`);
+        // Determine if the word is Finnish
+        const isWordFinnish = isFinnish(word);
+        
+        // Always use Finnish prompt for Finnish words
+        const prompt = isWordFinnish 
+            ? `Määrittele suomeksi sana tai yhdyssana: "${word}". Anna vain tarkka määritelmä suomeksi, ei muuta selitystä.`
+            : `Define this word or compound word in English: "${word}". Give only the definition, no other explanation.`;
+
+        const result = await groqClient(prompt);
         return result.choices[0].message.content.trim();
     } catch (error) {
         console.error('Error getting definition:', error);
@@ -151,37 +185,64 @@ async function handleGetAnswer() {
     answerContainer.textContent = '...';
     
     let answer;
-    // Check if it's a single word
-    if (isSingleWord(selectedText)) {
+    // Check if it's a word or compound word
+    if (isWord(selectedText)) {
         answer = await getDefinition(selectedText);
+        // For definitions, just show "Done." but still copy to clipboard
+        const cleanAnswer = answer.replace('Answer: ', '');
+        await copyToClipboard(cleanAnswer);
+        answerContainer.textContent = 'Done.';
+        setTimeout(() => {
+            answerContainer.style.display = 'none';
+        }, 1000);
     } else {
         answer = await getAnswerFromGroq(selectedText);
+        // For multiple choice/true-false questions, show the answer
+        const cleanAnswer = answer.replace('Answer: ', '');
+        answerContainer.textContent = cleanAnswer;
+        await copyToClipboard(cleanAnswer);
+        setTimeout(() => {
+            answerContainer.style.display = 'none';
+        }, 3000);
     }
-
-    // Clean and display the answer
-    const cleanAnswer = answer.replace('Answer: ', '');
-    answerContainer.textContent = cleanAnswer;
-    
-    // Copy answer to clipboard
-    await copyToClipboard(cleanAnswer);
-    
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-        answerContainer.style.display = 'none';
-    }, 5000);
 }
 
 // Initialize answer container
 let answerContainer = createAnswerContainer();
 
-// Add keyboard shortcut listener (Ctrl + Q or Alt + X)
-document.addEventListener('keydown', async (event) => {
-    if ((event.ctrlKey && event.key.toLowerCase() === 'q') || 
-        (event.altKey && event.key.toLowerCase() === 'x')) {
-        event.preventDefault(); // Prevent default browser behavior
-        await handleGetAnswer();
+// Function to handle key events for Firefox compatibility
+function handleKeyEvent(event) {
+    // Firefox-specific key detection
+    const isZKey = (
+        event.key?.toLowerCase() === 'z' ||
+        event.code === 'KeyZ' ||
+        event.which === 122 ||  // Firefox uses 122 for 'z'
+        event.charCode === 122  // Firefox charCode
+    );
+
+    // Get selected text before preventing default
+    const selectedText = window.getSelection().toString().trim();
+    
+    if (isZKey && selectedText.length > 0) {
+        // Prevent default before async operation
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // Call handleGetAnswer without await since we're in a non-async function
+        handleGetAnswer().catch(console.error);
+        
+        // Return false to ensure the event is cancelled in Firefox
+        return false;
     }
-});
+}
+
+// Remove old event listeners if they exist
+document.removeEventListener('keydown', handleKeyEvent, true);
+document.removeEventListener('keypress', handleKeyEvent, true);
+
+// Add event listeners specifically for Firefox
+document.addEventListener('keypress', handleKeyEvent, true);
+document.addEventListener('keydown', handleKeyEvent, true);
 
 // Listen for messages from background script (for right-click menu)
 browserAPI.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -204,7 +265,7 @@ browserAPI.runtime.onMessage.addListener((request, sender, sendResponse) => {
         // Check if it's a single word or a question
         const processText = async () => {
             let answer;
-            if (isSingleWord(selectedText)) {
+            if (isWord(selectedText)) {
                 answer = await getDefinition(selectedText);
             } else {
                 answer = await getAnswerFromGroq(selectedText);
@@ -217,10 +278,10 @@ browserAPI.runtime.onMessage.addListener((request, sender, sendResponse) => {
             // Copy answer to clipboard
             await copyToClipboard(cleanAnswer);
             
-            // Auto-hide after 5 seconds
+            // Auto-hide after 2 seconds
             setTimeout(() => {
                 answerContainer.style.display = 'none';
-            }, 5000);
+            }, 2000);
         };
         
         processText();
