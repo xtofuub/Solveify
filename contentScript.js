@@ -174,9 +174,10 @@ async function handleGetAnswer() {
 // Initialize answer container
 let answerContainer = createAnswerContainer();
 
-// Add keyboard shortcut listener (Ctrl + Q)
+// Add keyboard shortcut listener (Ctrl + Q or Alt + X)
 document.addEventListener('keydown', async (event) => {
-    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'q') {
+    if ((event.ctrlKey && event.key.toLowerCase() === 'q') || 
+        (event.altKey && event.key.toLowerCase() === 'x')) {
         event.preventDefault(); // Prevent default browser behavior
         await handleGetAnswer();
     }
