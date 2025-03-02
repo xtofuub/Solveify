@@ -11,7 +11,7 @@
 - **Definition Lookup**: Provides clear definitions for single-word queries.
 - **User-Friendly Interface**: Simple and intuitive design for easy navigation.
 - **Keyboard Shortcut**: Use "Ctrl + Q" or "Alt + X" to automatically answer the highlighted task.
--**Stealth**: The answer is hard too see making it easy to use it. (the answer will appear in the bottom left corner) 
+- **Stealth**: The answer is hard too see making it easy to use it. (the answer will appear in the bottom left corner) 
 
 
 ## Installation
