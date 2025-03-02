@@ -124,40 +124,17 @@ function isWord(text) {
     return words.length >= 1 && words.length <= 3;
 }
 
-// Function to check if text contains Finnish characters or common Finnish words
+// Function to check if text contains Finnish characters
 function isFinnish(text) {
-    // Finnish special characters
     const finnishChars = /[äöåÄÖÅ]/;
-    
-    // Common Finnish word endings and patterns
-    const finnishPatterns = /(nen|ssa|ssä|sta|stä|lla|llä|ksi|sti|ton|tön|us|ys|in|aan|ään|ua|yä|tta|ttä|mme|tte|nsa|nsä)$/i;
-    
-    // Common Finnish short words
-    const commonFinnishWords = new Set([
-        'ja', 'on', 'se', 'ei', 'että', 'oli', 'ovat', 'ole', 'tai', 'kun',
-        'jos', 'niin', 'hän', 'me', 'te', 'he', 'tämä', 'tuo', 'nyt', 'voi',
-        'olla', 'joka', 'sen', 'vain', 'kuin', 'minä', 'mitä', 'niin'
-    ]);
-
-    const words = text.toLowerCase().trim().split(/\s+/);
-    
-    return words.some(word => 
-        finnishChars.test(word) || 
-        finnishPatterns.test(word) || 
-        commonFinnishWords.has(word)
-    );
+    return finnishChars.test(text);
 }
 
 // Function to get definition from Groq API
 async function getDefinition(word) {
     try {
-        // Determine if the word is Finnish
-        const isWordFinnish = isFinnish(word);
-        
-        // Always use Finnish prompt for Finnish words
-        const prompt = isWordFinnish 
-            ? `Määrittele suomeksi sana tai yhdyssana: "${word}". Anna vain tarkka määritelmä suomeksi, ei muuta selitystä.`
-            : `Define this word or compound word in English: "${word}". Give only the definition, no other explanation.`;
+        // Always use Finnish prompt regardless of input word
+        const prompt = `Määrittele suomeksi sana tai yhdyssana: "${word}". Anna vain yksityiskohtainen määritelmä suomeksi omin sanoin kirjoitettuna, ei muuta selitystä.`;
 
         const result = await groqClient(prompt);
         return result.choices[0].message.content.trim();
