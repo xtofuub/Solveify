@@ -10,7 +10,7 @@
 - **Multiple Choice Support**: Works seamlessly with multiple-choice questions.
 - **Definition Lookup**: Provides clear definitions for single-word queries.
 - **User-Friendly Interface**: Simple and intuitive design for easy navigation.
-- **Keyboard Shortcut**: Use "Ctrl + Q" or "Alt + X" to automatically answer the highlighted task.
+- **Keyboard Shortcut**: Use z" to automatically answer the highlighted task.
 - **Stealth**: The answer is hard too see making it easy to use it. (the answer will appear in the bottom left corner) 
 
 
@@ -30,7 +30,7 @@
 1. Highlight a question or word on any webpage.
 2. Right-click and select "Get answer to this question".
 3. Questify will analyze the text and display the answer.
-4. It also has a built in shortcut using "ctrl + q/alt + x" to automatically answer the task
+4. It also has a built in shortcut using "z" to automatically answer the task
 5. The answer will appear at the bottom left corner that is bearly visible so the teacher cannot see.
 
 
