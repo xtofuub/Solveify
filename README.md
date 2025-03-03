@@ -18,7 +18,7 @@
 
 1. Clone the repository:
    ```bash
-   [git clone https://github.com/yourusername/questify.git](https://github.com/xtofuub/Solveify.git)
+   git clone https://github.com/xtofuub/Solveify.git
    ```
 2. Extract the ZIP
 3. Load the extension in your browser:
