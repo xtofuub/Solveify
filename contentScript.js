@@ -6,7 +6,6 @@ async function copyToClipboard(text) {
     try {
         await navigator.clipboard.writeText(text);
     } catch (err) {
-        // Fallback for older browsers or if clipboard API fails
         const textArea = document.createElement('textarea');
         textArea.value = text;
         textArea.style.position = 'fixed';
@@ -51,41 +50,36 @@ function createAnswerContainer() {
     return container;
 }
 
-// Initialize Groq API client
-const groqApiUrl = 'https://api.groq.com/openai/v1';
-
-const groqClient = async (question) => {
+// Initialize Gemini API client
+const geminiClient = async (question, instruction) => {
     try {
-        // Get the API key from storage
         const data = await new Promise((resolve) => {
-            browserAPI.storage.sync.get('groqApiKey', resolve);
+            browserAPI.storage.sync.get('geminiApiKey', resolve);
         });
         
-        if (!data.groqApiKey) {
-            throw new Error('Please set your Groq API key in the extension settings');
+        if (!data.geminiApiKey) {
+            throw new Error('Please set your Gemini API key in the extension settings');
         }
 
-        const response = await fetch(`${groqApiUrl}/chat/completions`, {
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${data.geminiApiKey}`;
+
+        const requestBody = {
+            contents: [{
+                role: 'user',
+                parts: [{ text: instruction + question }]
+            }],
+            generationConfig: {
+                temperature: 0.1,
+                maxOutputTokens: 150
+            }
+        };
+
+        const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${data.groqApiKey}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                model: 'llama-3.1-8b-instant',
-                messages: [
-                    {
-                        role: 'system',
-                        content: 'You are a helpful AI Assistant. Given a question and its options, analyze and return ONLY the letter of the correct answer (A, B, C, or D) for multiple choice, or "True"/"False" for true/false questions. For definition questions, provide a detailed, clear definition.'
-                    },
-                    {
-                        role: 'user',
-                        content: `Question: ${question}\nPlease provide only the answer, no explanation.`
-                    }
-                ],
-                temperature: 0.1,
-                max_tokens: 150
-            })
+            body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {
@@ -95,52 +89,44 @@ const groqClient = async (question) => {
 
         const responseData = await response.json();
         
-        if (!responseData || !responseData.choices || !responseData.choices[0] || !responseData.choices[0].message) {
+        if (!responseData || !responseData.candidates || !responseData.candidates[0] || !responseData.candidates[0].content) {
             throw new Error('Invalid response from API');
-        }3000
+        }
 
-        return responseData;
+        return responseData.candidates[0].content.parts[0].text.trim();
     } catch (error) {
         console.error('Error:', error);
         throw error;
     }
 };
 
-// Function to get answer from Groq API
-async function getAnswerFromGroq(question) {
+// Function to get answer from Gemini API
+async function getAnswerFromGemini(question) {
     try {
-        const result = await groqClient(question);
-        return result.choices[0].message.content.trim();
+        const instruction = 'You are a helpful AI Assistant. Given a question and its options, analyze and return ONLY the letter of the correct answer (A, B, C, or D) for multiple choice, or "True"/"False" for true/false questions. For definition questions, provide a detailed, clear definition. Do not provide any explanation.';
+        const result = await geminiClient(question, instruction);
+        return result;
     } catch (error) {
         console.error('Error:', error);
-        return `Error: ${error.message}. Please make sure your API key is correct and try again.`;
+        return `Error: ${error.message}`;
     }
 }
 
 // Function to check if text is a word or compound word
 function isWord(text) {
     const words = text.trim().split(/\s+/);
-    // Check if it's a single word or a 2-3 word compound
     return words.length >= 1 && words.length <= 3;
 }
 
-// Function to check if text contains Finnish characters
-function isFinnish(text) {
-    const finnishChars = /[äöåÄÖÅ]/;
-    return finnishChars.test(text);
-}
-
-// Function to get definition from Groq API
+// Function to get definition from Gemini API
 async function getDefinition(word) {
     try {
-        // Always use Finnish prompt regardless of input word
-        const prompt = `Määrittele suomeksi sana tai yhdyssana: "${word}". Anna vain yksityiskohtainen määritelmä suomeksi omin sanoin kirjoitettuna, ei muuta selitystä.`;
-
-        const result = await groqClient(prompt);
-        return result.choices[0].message.content.trim();
+        const instruction = `Määrittele suomeksi sana tai yhdyssana: "${word}". Anna vain yksityiskohtainen määritelmä suomeksi omin sanoin kirjoitettuna, ei muuta selitystä.`;
+        const result = await geminiClient(word, instruction);
+        return result;
     } catch (error) {
         console.error('Error getting definition:', error);
-        return null;
+        return `Error: ${error.message}`;
     }
 }
 
@@ -157,58 +143,67 @@ async function handleGetAnswer() {
         return;
     }
     
-    // Show loading state
     answerContainer.style.display = 'block';
     answerContainer.textContent = '...';
     
     let answer;
-    // Check if it's a word or compound word
-    if (isWord(selectedText)) {
-        answer = await getDefinition(selectedText);
-        // For definitions, just show "Done." but still copy to clipboard
-        const cleanAnswer = answer.replace('Answer: ', '');
-        await copyToClipboard(cleanAnswer);
-        answerContainer.textContent = 'Done.';
+    try {
+        if (isWord(selectedText)) {
+            answer = await getDefinition(selectedText);
+        } else {
+            answer = await getAnswerFromGemini(selectedText);
+        }
+        
+        if (answer.startsWith('Error:')) {
+            answerContainer.textContent = answer;
+            setTimeout(() => {
+                answerContainer.style.display = 'none';
+            }, 5000);
+            return;
+        }
+
+        const cleanAnswer = answer;
+        
+        if (isWord(selectedText)) {
+            answerContainer.textContent = 'Done.';
+            await copyToClipboard(cleanAnswer);
+            setTimeout(() => {
+                answerContainer.style.display = 'none';
+            }, 1000);
+        } else {
+            answerContainer.textContent = cleanAnswer;
+            await copyToClipboard(cleanAnswer);
+            setTimeout(() => {
+                answerContainer.style.display = 'none';
+            }, 3000);
+        }
+
+    } catch (error) {
+        answerContainer.textContent = `API Error: ${error.message}`;
         setTimeout(() => {
             answerContainer.style.display = 'none';
-        }, 1000);
-    } else {
-        answer = await getAnswerFromGroq(selectedText);
-        // For multiple choice/true-false questions, show the answer
-        const cleanAnswer = answer.replace('Answer: ', '');
-        answerContainer.textContent = cleanAnswer;
-        await copyToClipboard(cleanAnswer);
-        setTimeout(() => {
-            answerContainer.style.display = 'none';
-        }, 3000);
+        }, 5000);
     }
 }
 
 // Initialize answer container
 let answerContainer = createAnswerContainer();
 
-// Function to handle key events for Firefox compatibility
+// Function to handle key events
 function handleKeyEvent(event) {
-    // Firefox-specific key detection
     const isZKey = (
         event.key?.toLowerCase() === 'z' ||
         event.code === 'KeyZ' ||
-        event.which === 122 ||  // Firefox uses 122 for 'z'
-        event.charCode === 122  // Firefox charCode
+        event.which === 122 ||
+        event.charCode === 122
     );
 
-    // Get selected text before preventing default
     const selectedText = window.getSelection().toString().trim();
     
     if (isZKey && selectedText.length > 0) {
-        // Prevent default before async operation
         event.preventDefault();
         event.stopPropagation();
-        
-        // Call handleGetAnswer without await since we're in a non-async function
         handleGetAnswer().catch(console.error);
-        
-        // Return false to ensure the event is cancelled in Firefox
         return false;
     }
 }
@@ -217,7 +212,7 @@ function handleKeyEvent(event) {
 document.removeEventListener('keydown', handleKeyEvent, true);
 document.removeEventListener('keypress', handleKeyEvent, true);
 
-// Add event listeners specifically for Firefox
+// Add event listeners specifically for Firefox and Chrome
 document.addEventListener('keypress', handleKeyEvent, true);
 document.addEventListener('keydown', handleKeyEvent, true);
 
@@ -235,30 +230,39 @@ browserAPI.runtime.onMessage.addListener((request, sender, sendResponse) => {
             return;
         }
         
-        // Show loading state
         answerContainer.style.display = 'block';
         answerContainer.textContent = '...';
         
-        // Check if it's a single word or a question
         const processText = async () => {
             let answer;
-            if (isWord(selectedText)) {
-                answer = await getDefinition(selectedText);
-            } else {
-                answer = await getAnswerFromGroq(selectedText);
+            try {
+                if (isWord(selectedText)) {
+                    answer = await getDefinition(selectedText);
+                } else {
+                    answer = await getAnswerFromGemini(selectedText);
+                }
+
+                if (answer.startsWith('Error:')) {
+                    answerContainer.textContent = answer;
+                    setTimeout(() => {
+                        answerContainer.style.display = 'none';
+                    }, 5000);
+                    return;
+                }
+
+                const cleanAnswer = answer;
+                answerContainer.textContent = cleanAnswer;
+                await copyToClipboard(cleanAnswer);
+                setTimeout(() => {
+                    answerContainer.style.display = 'none';
+                }, 2000);
+
+            } catch (error) {
+                answerContainer.textContent = `API Error: ${error.message}`;
+                setTimeout(() => {
+                    answerContainer.style.display = 'none';
+                }, 5000);
             }
-            
-            // Clean and display the answer
-            const cleanAnswer = answer.replace('Answer: ', '');
-            answerContainer.textContent = cleanAnswer;
-            
-            // Copy answer to clipboard
-            await copyToClipboard(cleanAnswer);
-            
-            // Auto-hide after 2 seconds
-            setTimeout(() => {
-                answerContainer.style.display = 'none';
-            }, 2000);
         };
         
         processText();

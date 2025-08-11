@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
   // Load saved API key when popup opens
-  chrome.storage.sync.get('groqApiKey', function(data) {
-    if (data.groqApiKey) {
-      document.getElementById('apiKey').value = data.groqApiKey;
+  chrome.storage.sync.get('geminiApiKey', function(data) {
+    if (data.geminiApiKey) {
+      document.getElementById('apiKey').value = data.geminiApiKey;
     }
   });
   
@@ -11,15 +11,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const apiKey = document.getElementById('apiKey').value.trim();
     
     if (apiKey) {
-      chrome.storage.sync.set({ 'groqApiKey': apiKey }, function() {
-        // Update button to show saved
+      chrome.storage.sync.set({ 'geminiApiKey': apiKey }, function() {
         const button = document.getElementById('saveButton');
         button.textContent = 'Saved!';
         button.style.backgroundColor = '#4CAF50';
         
-        // Revert button after 2 seconds
         setTimeout(() => {
-          button.textContent = 'Save Settings';
+          button.textContent = 'Save API Key';
           button.style.backgroundColor = '#4285F4';
         }, 2000);
       });
