@@ -1,13 +1,9 @@
-// Simple background script
+// Simple background script for a service worker
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: "answerQuestion",
     title: "Get answer with Solveify",
-    contexts: ["selection"],
-    icons: {
-      "16": "icons/icon16.png",
-      "32": "icons/icon32.png"
-    }
+    contexts: ["selection"]
   });
 });
 
@@ -19,4 +15,4 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       selectedText: info.selectionText
     });
   }
-});
+});s
