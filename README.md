@@ -1,5 +1,3 @@
-Got it 👍 Here’s your text updated to use **Gemini API** instead of Groq:
-
 ---
 
 # Questify (Stealth version)
