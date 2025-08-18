@@ -1,5 +1,3 @@
----
-
 # Questify (Stealth version)
 
 **Questify** is a browser extension that simplifies the process of answering questions. By leveraging the **Gemini API**, it allows users to quickly analyze highlighted questions and retrieve accurate answers, making knowledge acquisition effortless.
