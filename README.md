@@ -1,5 +1,7 @@
 # Questify (Stealth version)
 
+[![Firefox](https://img.shields.io/badge/Firefox-FF7139?style=for-the-badge&logo=Firefox-Browser&logoColor=white)](https://addons.mozilla.org/en-US/firefox/addon/solveify/)
+
 **Questify** is a browser extension that simplifies the process of answering questions. By leveraging the **Gemini API**, it allows users to quickly analyze highlighted questions and retrieve accurate answers, making knowledge acquisition effortless.
 
 ![original-7c3852b08e60261f29f0fc3a3776da6f\_jpg](https://github.com/user-attachments/assets/4f0795c5-81a9-4b49-9a65-ccca129fe8e9)
