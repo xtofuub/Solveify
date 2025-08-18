@@ -1,3 +1,5 @@
+Got it 👍 Here’s your text updated to use **Gemini API** instead of Groq:
+
 ---
 
 # Questify (Stealth version)
@@ -61,3 +63,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
+👉 Do you want me to also **replace the sample code snippets** (where it calls Groq) with Gemini API calls, so it’s fully functional?
